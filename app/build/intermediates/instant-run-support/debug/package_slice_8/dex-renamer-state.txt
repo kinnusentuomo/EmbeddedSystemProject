@@ -1,0 +1,4 @@
+#Wed Nov 01 13:29:36 EET 2017
+base.0=C\:\\Users\\tuomo\\Documents\\OAMK\\3.vuosi\\Embedded_system_development_project\\Notification\\T4Kitu00StudentsOamkFi7Rx\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\8
+renamed.0=classes.dex
+file.0=C\:\\Users\\tuomo\\Documents\\OAMK\\3.vuosi\\Embedded_system_development_project\\Notification\\T4Kitu00StudentsOamkFi7Rx\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\8\\classes.dex

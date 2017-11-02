@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:background="@color/colorAccent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TableLayout>
+        <TextView
+            android:layout_margin="15sp"
+            style="@style/tempTextViewStyle"
+            android:layout_weight="1"
+            android:id="@+id/textViewTemperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </TableLayout>
+
+    <TableLayout>
+        <TextView
+            android:layout_margin="15sp"
+            style="@style/tempTextViewStyle"
+            android:layout_weight="1"
+            android:id="@+id/textViewBatteryPercentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </TableLayout>
+
+    <TableLayout>
+        <TextView
+            android:layout_margin="15sp"
+            style="@style/tempTextViewStyle"
+            android:layout_weight="1"
+            android:id="@+id/textViewAmbientLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </TableLayout>
+
+    <TableLayout>
+        <TextView
+            android:layout_margin="15sp"
+            style="@style/tempTextViewStyle"
+            android:layout_weight="1"
+            android:id="@+id/textViewProximity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </TableLayout>
+</TableLayout>
