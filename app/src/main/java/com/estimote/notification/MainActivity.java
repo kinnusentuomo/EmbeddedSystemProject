@@ -48,7 +48,9 @@ public class MainActivity extends AppCompatActivity {
     private String TAG2 = "BeaconsLab";
     private String temperature;
 
-    TextView textViewTemperature, textViewBatteryPercentage, textViewAmbientLight, textViewProximity;
+    private static final Map<Color, Integer> BACKGROUND_COLORS = new HashMap<>();
+
+    TextView textViewTemperature, textViewBatteryPercentage, textViewAmbientLight, textViewProximity, textViewBeaconColor;
     private com.estimote.notification.estimote.ProximityContentManager proximityContentManager;
 
 
@@ -60,18 +62,29 @@ public class MainActivity extends AppCompatActivity {
         textViewBatteryPercentage = (TextView) findViewById(R.id.textViewBatteryPercentage);
         textViewAmbientLight = (TextView) findViewById(R.id.textViewAmbientLight);
         textViewProximity = (TextView) findViewById(R.id.textViewProximity);
-        textViewTemperature.setText("Getting temperature...");
+        textViewBeaconColor = (TextView) findViewById(R.id.textViewBeaconColor);
+        textViewTemperature.setText("Getting temp...");
         beaconManager = new BeaconManager(this);
 
-        setBeaconId();
+        String beaconId = "9a7e34e9683bbfbc2823fee60beab107";
+        textViewBeaconColor.setText("Searching for beacon w/ id: " + beaconId);
+        setBeaconId(beaconId);
         getBeaconSensorInfo();
     }
 
-    public void setBeaconId()
+    static {
+        BACKGROUND_COLORS.put(Color.ICY_MARSHMALLOW, android.graphics.Color.rgb(109, 170, 199));
+        BACKGROUND_COLORS.put(Color.BLUEBERRY_PIE, android.graphics.Color.rgb(98, 84, 158));
+        BACKGROUND_COLORS.put(Color.MINT_COCKTAIL, android.graphics.Color.rgb(155, 186, 160));
+    }
+
+    private static final int BACKGROUND_COLOR_NEUTRAL = android.graphics.Color.rgb(160, 169, 172);
+
+    public void setBeaconId(String beaconId)
     {
         proximityContentManager = new ProximityContentManager(this,
                 Arrays.asList(
-                        "9a7e34e9683bbfbc2823fee60beab107"),
+                        beaconId),
                 new com.estimote.notification.estimote.EstimoteCloudBeaconDetailsFactory());
         proximityContentManager.setListener(new com.estimote.notification.estimote.ProximityContentManager.Listener() {
             @Override
@@ -81,25 +94,20 @@ public class MainActivity extends AppCompatActivity {
                 if (content != null) {
                     com.estimote.notification.estimote.EstimoteCloudBeaconDetails beaconDetails = (com.estimote.notification.estimote.EstimoteCloudBeaconDetails) content;
                     text = "You're in " + beaconDetails.getBeaconName() + "'s range!";
-                    //backgroundColor = BACKGROUND_COLORS.get(beaconDetails.getBeaconColor());
+                    backgroundColor = BACKGROUND_COLORS.get(beaconDetails.getBeaconColor());
                 } else {
                     text = "No beacons in range.";
                     backgroundColor = null;
                 }
-                /*((TextView) findViewById(R.id.textView)).setText(text);
-                findViewById(R.id.relativeLayout).setBackgroundColor(
-                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL); */
+                ((TextView) findViewById(R.id.textViewBeaconColor)).setText(text);
+                /*findViewById(R.id.relativeLayout).setBackgroundColor(
+                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL);*/
             }
         });
     }
 
-
-
     public void getBeaconSensorInfo()
     {
-
-
-
         //final Region ALL_ESTIMOTE_BEACONS = new Region("rid", ESTIMOTE_PROXIMITY_UUID, null, null);
 
         EstimoteSDK.initialize(getApplicationContext(), "t4kitu00-students-oamk-fi--7rx", "02c8d7eb0556810d218bfe75dca7e980");
@@ -169,5 +177,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onStop TelemetryDiscovery");
         //mTextViewTemperatura.setText("Stopped");
         beaconManager.stopTelemetryDiscovery();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "Stopping ProximityContentManager content updates");
+        proximityContentManager.stopContentUpdates();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        proximityContentManager.destroy();
     }
 }
