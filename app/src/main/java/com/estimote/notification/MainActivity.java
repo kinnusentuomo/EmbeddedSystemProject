@@ -1,16 +1,34 @@
 package com.estimote.notification;
+//package com.estimote.proximity;
 
-import android.annotation.SuppressLint;
+import android.graphics.Region;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.estimote.coresdk.cloud.model.BeaconInfo;
+import com.estimote.coresdk.common.config.EstimoteSDK;
 import com.estimote.coresdk.common.requirements.SystemRequirementsChecker;
+import com.estimote.coresdk.recognition.packets.DeviceType;
 import com.estimote.coresdk.recognition.packets.EstimoteTelemetry;
 import com.estimote.coresdk.service.BeaconManager;
+//import com.estimote.sdk.connection.scanner.ConfigurableDevicesScanner;
+import com.estimote.coresdk.recognition.packets.ConfigurableDevice;
+import com.estimote.mgmtsdk.connection.protocol.characteristic.EstimoteUuid;
+
+import com.estimote.coresdk.cloud.model.Color;
+import com.estimote.coresdk.common.requirements.SystemRequirementsChecker;
+import com.estimote.notification.estimote.ProximityContentManager;
+
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 
 import java.util.List;
+import java.util.UUID;
 
 //
 // Running into any issues? Drop us an email to: contact@estimote.com
@@ -21,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     String moveState;
 
+    private static final UUID ESTIMOTE_PROXIMITY_UUID = UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D");
+
+
     //ADDED
     private BeaconManager beaconManager;
     public String scanId;
@@ -28,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private String temperature;
 
     TextView textViewTemperature, textViewBatteryPercentage, textViewAmbientLight, textViewProximity;
+    private com.estimote.notification.estimote.ProximityContentManager proximityContentManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,19 +62,56 @@ public class MainActivity extends AppCompatActivity {
         textViewProximity = (TextView) findViewById(R.id.textViewProximity);
         textViewTemperature.setText("Getting temperature...");
         beaconManager = new BeaconManager(this);
-        startScan();
+
+        setBeaconId();
+        getBeaconSensorInfo();
     }
 
-    public void startScan()
+    public void setBeaconId()
     {
-        textViewTemperature.setText("Starting telemetry...");
+        proximityContentManager = new ProximityContentManager(this,
+                Arrays.asList(
+                        "9a7e34e9683bbfbc2823fee60beab107"),
+                new com.estimote.notification.estimote.EstimoteCloudBeaconDetailsFactory());
+        proximityContentManager.setListener(new com.estimote.notification.estimote.ProximityContentManager.Listener() {
+            @Override
+            public void onContentChanged(Object content) {
+                String text;
+                Integer backgroundColor;
+                if (content != null) {
+                    com.estimote.notification.estimote.EstimoteCloudBeaconDetails beaconDetails = (com.estimote.notification.estimote.EstimoteCloudBeaconDetails) content;
+                    text = "You're in " + beaconDetails.getBeaconName() + "'s range!";
+                    //backgroundColor = BACKGROUND_COLORS.get(beaconDetails.getBeaconColor());
+                } else {
+                    text = "No beacons in range.";
+                    backgroundColor = null;
+                }
+                /*((TextView) findViewById(R.id.textView)).setText(text);
+                findViewById(R.id.relativeLayout).setBackgroundColor(
+                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL); */
+            }
+        });
+    }
+
+
+
+    public void getBeaconSensorInfo()
+    {
+
+
+
+        //final Region ALL_ESTIMOTE_BEACONS = new Region("rid", ESTIMOTE_PROXIMITY_UUID, null, null);
+
+        EstimoteSDK.initialize(getApplicationContext(), "t4kitu00-students-oamk-fi--7rx", "02c8d7eb0556810d218bfe75dca7e980");
+
+
         beaconManager.setTelemetryListener(new BeaconManager.TelemetryListener() {
 
             @Override
             public void onTelemetriesFound(List<EstimoteTelemetry> telemetries) {
                 for (EstimoteTelemetry tlm : telemetries) {
                     Log.d(TAG, "beaconID: " + tlm.deviceId +
-                            ", temperatura: " + tlm.temperature + " °C");
+                            ", temperature: " + tlm.temperature + " °C");
 
                     //Set text values to UI
                     //textViewTemperature.setText(String.format("Id: [%s", tlm.deviceId.toString().substring(tlm.deviceId.toString().length() - 5)));
@@ -69,6 +129,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                     textViewProximity.setText(moveState);
 
+                    Log.d("isBeaconMoving", String.valueOf(tlm.motionState));
+
                     temperature = String.format("Temperature: %s °C", tlm.temperature);
                 }
             }
@@ -77,8 +139,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override protected void onStart() {
         super.onStart();
-        Log.d(TAG, "onStart TelemetryDiscovery");
-        //mTextViewTemperatura.setText("Started");
         beaconManager.connect(new BeaconManager.ServiceReadyCallback() {
             @Override
             public void onServiceReady() {
