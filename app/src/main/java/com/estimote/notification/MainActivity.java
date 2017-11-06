@@ -36,11 +36,16 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    String beaconId = "9a7e34e9683bbfbc2823fee60beab107"; //Mint(tyhjä)
+
+    String yellowBeaconId = "2237fbe66fa7fe58013b4c1986516e2d";
+
+
     private static final String TAG = "MainActivity";
     String moveState;
 
     private static final UUID ESTIMOTE_PROXIMITY_UUID = UUID.fromString("B9407F30-F5F8-466E-AFF9-25556B57FE6D");
-
 
     //ADDED
     private BeaconManager beaconManager;
@@ -53,6 +58,13 @@ public class MainActivity extends AppCompatActivity {
     TextView textViewTemperature, textViewBatteryPercentage, textViewAmbientLight, textViewProximity, textViewBeaconColor;
     private com.estimote.notification.estimote.ProximityContentManager proximityContentManager;
 
+    static {
+        BACKGROUND_COLORS.put(Color.ICY_MARSHMALLOW, android.graphics.Color.rgb(109, 170, 199));
+        BACKGROUND_COLORS.put(Color.BLUEBERRY_PIE, android.graphics.Color.rgb(98, 84, 158));
+        BACKGROUND_COLORS.put(Color.MINT_COCKTAIL, android.graphics.Color.rgb(155, 186, 160));
+    }
+
+    private static final int BACKGROUND_COLOR_NEUTRAL = android.graphics.Color.rgb(160, 169, 172);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,19 +78,13 @@ public class MainActivity extends AppCompatActivity {
         textViewTemperature.setText("Getting temp...");
         beaconManager = new BeaconManager(this);
 
-        String beaconId = "9a7e34e9683bbfbc2823fee60beab107";
+
         textViewBeaconColor.setText("Searching for beacon w/ id: " + beaconId);
-        setBeaconId(beaconId);
+        setBeaconId(yellowBeaconId);
         getBeaconSensorInfo();
     }
 
-    static {
-        BACKGROUND_COLORS.put(Color.ICY_MARSHMALLOW, android.graphics.Color.rgb(109, 170, 199));
-        BACKGROUND_COLORS.put(Color.BLUEBERRY_PIE, android.graphics.Color.rgb(98, 84, 158));
-        BACKGROUND_COLORS.put(Color.MINT_COCKTAIL, android.graphics.Color.rgb(155, 186, 160));
-    }
 
-    private static final int BACKGROUND_COLOR_NEUTRAL = android.graphics.Color.rgb(160, 169, 172);
 
     public void setBeaconId(String beaconId)
     {
@@ -100,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
                     backgroundColor = null;
                 }
                 ((TextView) findViewById(R.id.textViewBeaconColor)).setText(text);
-                /*findViewById(R.id.relativeLayout).setBackgroundColor(
-                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL);*/
+                findViewById(R.layout.activity_main).setBackgroundColor(
+                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL);
             }
         });
     }
@@ -169,6 +175,15 @@ public class MainActivity extends AppCompatActivity {
         } else if (!app.isBeaconNotificationsEnabled()) {
             Log.d(TAG, "Enabling beacon notifications");
             app.enableBeaconNotifications();
+        }
+
+        if (!SystemRequirementsChecker.checkWithDefaultDialogs(this)) {
+            Log.e(TAG, "Can't scan for beacons, some pre-conditions were not met");
+            Log.e(TAG, "Read more about what's required at: http://estimote.github.io/Android-SDK/JavaDocs/com/estimote/sdk/SystemRequirementsChecker.html");
+            Log.e(TAG, "If this is fixable, you should see a popup on the app's screen right now, asking to enable what's necessary");
+        } else {
+            Log.d(TAG, "Starting ProximityContentManager content updates");
+            proximityContentManager.startContentUpdates();
         }
     }
 
