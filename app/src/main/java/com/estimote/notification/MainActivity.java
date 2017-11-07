@@ -37,7 +37,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
 
 
-    String beaconId = "9a7e34e9683bbfbc2823fee60beab107"; //Mint(tyhjä)
+    String mintBeaconId = "9a7e34e9683bbfbc2823fee60beab107"; //Mint(tyhjä)
 
     String yellowBeaconId = "2237fbe66fa7fe58013b4c1986516e2d";
 
@@ -79,19 +79,23 @@ public class MainActivity extends AppCompatActivity {
         beaconManager = new BeaconManager(this);
 
 
-        textViewBeaconColor.setText("Searching for beacon w/ id: " + beaconId);
-        setBeaconId(yellowBeaconId);
-        getBeaconSensorInfo();
+
+
+        setBeaconId(mintBeaconId);
+        //getBeaconSensorInfo();
     }
 
 
 
     public void setBeaconId(String beaconId)
     {
+        textViewBeaconColor.setText("Searching for beacon w/ id: " + beaconId);
         proximityContentManager = new ProximityContentManager(this,
                 Arrays.asList(
                         beaconId),
                 new com.estimote.notification.estimote.EstimoteCloudBeaconDetailsFactory());
+
+
         proximityContentManager.setListener(new com.estimote.notification.estimote.ProximityContentManager.Listener() {
             @Override
             public void onContentChanged(Object content) {
@@ -99,17 +103,62 @@ public class MainActivity extends AppCompatActivity {
                 Integer backgroundColor;
                 if (content != null) {
                     com.estimote.notification.estimote.EstimoteCloudBeaconDetails beaconDetails = (com.estimote.notification.estimote.EstimoteCloudBeaconDetails) content;
-                    text = "You're in " + beaconDetails.getBeaconName() + "'s range!";
+                    text = "You're in " + beaconDetails.getBeaconName() + "'s range! Which colour is: " + beaconDetails.getBeaconColor();
                     backgroundColor = BACKGROUND_COLORS.get(beaconDetails.getBeaconColor());
+
+
+
+                    //ADDED
+                    beaconManager.setTelemetryListener(new BeaconManager.TelemetryListener() {
+
+                        @Override
+                        public void onTelemetriesFound(List<EstimoteTelemetry> telemetries) {
+                            for (EstimoteTelemetry tlm : telemetries) {
+                                Log.d(TAG, "beaconID: " + tlm.deviceId +
+                                        ", temperature: " + tlm.temperature + " °C");
+
+                                //Set text values to UI
+                                //textViewTemperature.setText(String.format("Id: [%s", tlm.deviceId.toString().substring(tlm.deviceId.toString().length() - 5)));
+                                textViewTemperature.setText(String.format("Temperature: %s °C", tlm.temperature));
+                                textViewBatteryPercentage.setText("Battery percentage: " + tlm.batteryPercentage + "%");
+                                textViewAmbientLight.setText("Ambient light: " + tlm.ambientLight);
+
+                                if(tlm.motionState)
+                                {
+                                    moveState = "Moving";
+                                }
+                                else
+                                {
+                                    moveState = "Not moving";
+                                }
+                                textViewProximity.setText(moveState);
+
+                                Log.d("isBeaconMoving", String.valueOf(tlm.motionState));
+
+                                temperature = String.format("Temperature: %s °C", tlm.temperature);
+                            }
+                        }
+                    });
+
+                    //END
+
+
+
+
                 } else {
                     text = "No beacons in range.";
                     backgroundColor = null;
                 }
                 ((TextView) findViewById(R.id.textViewBeaconColor)).setText(text);
-                findViewById(R.layout.activity_main).setBackgroundColor(
-                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL);
+                /*findViewById(R.layout.activity_main).setBackgroundColor(
+                        backgroundColor != null ? backgroundColor : BACKGROUND_COLOR_NEUTRAL);*/
+
+
             }
         });
+
+
+
     }
 
     public void getBeaconSensorInfo()

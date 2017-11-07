@@ -29,8 +29,8 @@ public class MyApplication extends Application {
         BeaconNotificationsManager beaconNotificationsManager = new BeaconNotificationsManager(this);
         beaconNotificationsManager.addNotification(
                 "9a7e34e9683bbfbc2823fee60beab107",
-                "Beacon lähietäisyydellä.",
-                "Olet poistunut paikallisen lämpötilan alueelta.");
+                "Majakka lähietäisyydellä.",
+                "Olet liian kaukana majakasta.");
         beaconNotificationsManager.startMonitoring();
         beaconNotificationsEnabled = true;
     }
