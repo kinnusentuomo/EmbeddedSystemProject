@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.estimote.coresdk.cloud.model.BeaconInfo;
 import com.estimote.coresdk.common.config.EstimoteSDK;
 import com.estimote.coresdk.common.requirements.SystemRequirementsChecker;
+import com.estimote.coresdk.recognition.packets.Beacon;
 import com.estimote.coresdk.recognition.packets.DeviceType;
 import com.estimote.coresdk.recognition.packets.EstimoteTelemetry;
 import com.estimote.coresdk.service.BeaconManager;
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     String mintBeaconId = "9a7e34e9683bbfbc2823fee60beab107"; //Mint(tyhjä)
+
 
     String yellowBeaconId = "2237fbe66fa7fe58013b4c1986516e2d";
 
@@ -81,13 +83,14 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
         setBeaconId(mintBeaconId);
         //getBeaconSensorInfo();
     }
 
 
 
-    public void setBeaconId(String beaconId)
+    public void setBeaconId(final String beaconId)
     {
         textViewBeaconColor.setText("Searching for beacon w/ id: " + beaconId);
         proximityContentManager = new ProximityContentManager(this,
@@ -107,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
                     backgroundColor = BACKGROUND_COLORS.get(beaconDetails.getBeaconColor());
 
 
-
                     //ADDED
                     beaconManager.setTelemetryListener(new BeaconManager.TelemetryListener() {
 
@@ -117,25 +119,40 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d(TAG, "beaconID: " + tlm.deviceId +
                                         ", temperature: " + tlm.temperature + " °C");
 
-                                //Set text values to UI
-                                //textViewTemperature.setText(String.format("Id: [%s", tlm.deviceId.toString().substring(tlm.deviceId.toString().length() - 5)));
-                                textViewTemperature.setText(String.format("Temperature: %s °C", tlm.temperature));
-                                textViewBatteryPercentage.setText("Battery percentage: " + tlm.batteryPercentage + "%");
-                                textViewAmbientLight.setText("Ambient light: " + tlm.ambientLight);
 
-                                if(tlm.motionState)
+
+                                String deviceId = tlm.deviceId.toString();
+                                deviceId = deviceId.replace("[", "");
+                                deviceId = deviceId.replace("]", "");
+                                Log.d("Comparing:", deviceId + " " + beaconId);
+
+                                if(deviceId.equals(beaconId))
                                 {
-                                    moveState = "Moving";
+                                    //Set text values to UI
+                                    textViewTemperature.setText(String.format("Temperature: %s °C", tlm.temperature));
+                                    textViewBatteryPercentage.setText("Battery percentage: " + tlm.batteryPercentage + "%");
+                                    textViewAmbientLight.setText("Ambient light: " + tlm.ambientLight);
+
+                                    if(tlm.motionState)
+                                    {
+                                        moveState = "Moving";
+                                    }
+                                    else
+                                    {
+                                        moveState = "Not moving";
+                                    }
+                                    textViewProximity.setText(moveState);
+
+                                    Log.d("isBeaconMoving", String.valueOf(tlm.motionState));
+
+                                    temperature = String.format("Temperature: %s °C", tlm.temperature);
                                 }
+
                                 else
                                 {
-                                    moveState = "Not moving";
+                                    Log.d("BeaconID", " Doesn't match");
                                 }
-                                textViewProximity.setText(moveState);
 
-                                Log.d("isBeaconMoving", String.valueOf(tlm.motionState));
-
-                                temperature = String.format("Temperature: %s °C", tlm.temperature);
                             }
                         }
                     });
